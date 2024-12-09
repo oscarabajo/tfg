@@ -1,0 +1,1063 @@
+https://www.youtube.com/watch?v=q0yNJlVCvrM
+https://www.youtube.com/watch?v=FcHsysPGSt0
+osciloscope art
+https://sdiy.info/wiki/Synth_DIY_Wiki - wiki de krear sintes, posee bibliografia
+
+
+
+
+
+
+
+espectro visible  [ 750 nm(rojo) a 380 nm (violea)]
+
+
+
+forma de citar, cuanta bibliografia, cuantas palabras, cada cuanto tutoria, como funcionar entre nosotras
+
+
+
+
+
+
+[#] BIBLIO GRAFIA
+ MIDI systems and control by    Rumsey, Francis 
+
+https://archive.org/details/advancedmidiuser0000penf/mode/2up
+Advanced MIDI user's guide - Penfold. R. A
+Practical MIDI handbook - Penfold R.A
+The MIDI manual - Huber David Miles
+MIDI survival guide - Lennard Vic :	mirar pagina 68
+
+
+
+existe QT graphicViewer. es esta una buena opcion? https://doc.qt.io/qt-6/graphicsview.html
+
+
+
+posibilidad de js
+
+
+
+-ai k ponerse a hacer el tema de que funcione para archivos .mid más complejos
+
+
+
+
+
+
+
+
+plotNotasQT.cpp es la version final del ploteo en forma daw- KoloreoDawFinal es su correspondiente 
+
+
+koloreoTransversal es la primera aproximacion transversal - midi_transversal.cpp
+    -falta solucionar el tema de los colores. Quiero decir, sale uno blanco respecto a la suma que sea moduklar
+
+
+
+    
+                o o o o
+                | | | |
+                --- ---
+                 |   |
+                 -----        
+    o-|            |            |-o
+      |-|          |          |-|
+    o-| |          |          | |-o
+        |----------O----------|
+    o-| |          |          | |-o
+      |-|          |          |-|
+    o-|            |            |-o
+                 -----
+                 |   |
+                --- ---
+                | | | |
+                o o o o
+
+
+
+
+
+
+KOMANDOS UTILES:
+  -Ver las conexiones midi activas
+    aconnect -l
+  -Eliminar conexiones midi activas????
+    aconnect -x
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hola, estoy haciendo un programa que colorea unas notas musicales de un midi dado decodificado de cierta manera. Me esta dando un error a la hora de ejecutar. a continuacion te dejo el error y los archivos implicados:
+ERROR:
+./koloreoTransversal.sh 
+Conexión MIDI establecida correctamente entre RtMidi y FluidSynth.
+[*] KREADOR MIDI
+Archivo MIDI 'pruebamultitrak.mid' creado con éxito.
+Archivo MIDI 'pruebamultitrak.mid' creado con éxito.
+[*] EKSTRACCION MIDI
+Extracción completada.
+[*] KOMPILADO C++
+make: se entra en el directorio '/home/megg/Escritorio/tfg/recursos'
+rm -f midi_transversal.o midiviewer
+make: se sale del directorio '/home/megg/Escritorio/tfg/recursos'
+make: se entra en el directorio '/home/megg/Escritorio/tfg/recursos'
+g++ -std=c++17 -Wall -g -c midi_transversal.cpp -o midi_transversal.o
+g++ midi_transversal.o -o midiviewer -lsfml-graphics -lsfml-window -lsfml-system -lrtmidi -pthread
+/usr/bin/ld: midi_transversal.o: en la función `processTrack(Track&, int, float, float, RtMidiOut&, float, float, std::vector<sf::Color, std::allocator<sf::Color> >&)':
+/home/megg/Escritorio/tfg/recursos/midi_transversal.cpp:133: referencia a `setColorByOctaveLinealAbss2(int)' sin definir
+/usr/bin/ld: /home/megg/Escritorio/tfg/recursos/midi_transversal.cpp:144: referencia a `setColorByOctaveLinealAbss2(int)' sin definir
+collect2: error: ld returned 1 exit status
+make: *** [Makefile:21: midiviewer] Error 1
+make: se sale del directorio '/home/megg/Escritorio/tfg/recursos'
+[*] PLOTTEO
+Error: archivo ./recursos/midiviewer no encontrado.
+
+
+
+koloreoTransversal.sh:
+#!/bin/bash
+
+EXCLUDE_DIR="$HOME/Escritorio/tfg/midifiles"
+BPM=120
+
+# Verificar si se proporcionó un argumento
+if [ $# -ge 1 ]; then
+    MIDI_FILE="$1"                            # Usar el archivo MIDI proporcionado
+    CRIM_FILE="$(basename "$MIDI_FILE" .mid)" # Nombre base para el archivo CRIM2s
+    USE_EXISTING_MIDI=true
+else
+    MIDI_FILE="pruebamultitrak.mid"           # Nombre del archivo MIDI a crear
+    CRIM_FILE="pruebamultitrak"               # Nombre base para el archivo CRIM2s
+    USE_EXISTING_MIDI=false
+fi
+
+# Iniciar FluidSynth en un terminal separado
+gnome-terminal -- bash -c "fluidsynth -o synth.polyphony=512 -o synth.cpu-cores=2 -o audio.periods=64 /usr/share/sounds/sf2/FluidR3_GM.sf2; exec bash"
+TERMINAL_PID=$!
+sleep 5
+
+# Verificar si FluidSynth está en ejecución
+FLUID_PID=$(pgrep fluidsynth)
+if [ -z "$FLUID_PID" ]; then
+    echo "Error: FluidSynth no está en ejecución. Inícialo antes de continuar."
+    exit 1
+fi
+
+# Conectar RtMidi con FluidSynth automáticamente
+aconnect 14:0 128:0
+if [ $? -eq 0 ]; then
+    echo "Conexión MIDI establecida correctamente entre RtMidi y FluidSynth."
+else
+    echo "Error: No se pudo establecer la conexión MIDI."
+    exit 1
+fi
+
+# Si no se proporcionó un archivo MIDI, crearlo
+if [ "$USE_EXISTING_MIDI" = false ]; then
+    # KREADOR MIDI
+    echo "[*] KREADOR MIDI"
+    python3 "$HOME/Escritorio/tfg/midiKreatore/creador_midiMultitrak.py" "$MIDI_FILE"
+
+    if [ -f "$HOME/Escritorio/tfg/$MIDI_FILE" ]; then
+        echo "Archivo MIDI '$MIDI_FILE' creado con éxito."
+    else
+        echo "Error: no se pudo crear el archivo MIDI."
+        exit 1
+    fi
+fi
+
+cd "$HOME/Escritorio/tfg" || exit
+
+# EKSTRACCION MIDI
+echo "[*] EKSTRACCION MIDI"
+python3 ./decoder/midiXtractor.py "$MIDI_FILE" ./decoder/"$CRIM_FILE"
+
+if [ -f ./decoder/"$CRIM_FILE".crim2s ]; then
+    echo "Extracción completada."
+else
+    echo "Error: la extracción no generó los archivos esperados."
+    exit 1
+fi
+
+# KOMPILADO C++
+echo "[*] KOMPILADO C++"
+# Usar Makefile para compilar
+make -C ./recursos clean  # Limpiar compilaciones previas
+make -C ./recursos CRIM_FILE="$CRIM_FILE" BPM="$BPM" run  # Compilar y ejecutar
+
+# PLOTTEO
+echo "[*] PLOTTEO"
+if [ -f "./recursos/midiviewer" ]; then
+    ./recursos/midiviewer ./decoder/"$CRIM_FILE".crim2s $BPM # Pasar el archivo .crim2s como argumento
+else
+    echo "Error: archivo ./recursos/midiviewer no encontrado."
+    exit 1
+fi
+
+# Eliminar archivos .mid y .crim2s, excepto en $EXCLUDE_DIR
+#echo "Eliminando archivos .crim3s, y .crim2s, excepto en $EXCLUDE_DIR..."
+
+# ELIMINAR ARCHIVOS
+#echo "[*] KLINIKO"
+#find . -type f \( -name "*.crim3s" -o -name "*.crim2s" \) ! -path "$EXCLUDE_DIR/*" -exec rm -f {} +
+
+# Cerrar FluidSynth al finalizar el script
+echo "Cerrando FluidSynth..."
+kill $FLUID_PID
+
+# Fin del script
+echo "Proceso completado."
+
+
+makefile(dentro de la carpeta recursos):
+# Definir el compilador y las opciones
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -g
+LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system -lrtmidi -pthread
+
+# Nombre del ejecutable
+TARGET = midiviewer
+
+# Archivos fuente
+SRCS = midi_transversal.cpp
+
+# Archivos objeto
+OBJS = $(SRCS:.cpp=.o)
+
+# Directorios
+SRC_DIR = .
+OBJ_DIR = .
+
+# Regla para compilar el ejecutable
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $(TARGET) $(LDFLAGS)
+
+# Regla para compilar los archivos .cpp en .o
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Regla para limpiar los archivos generados, excluyendo los .h
+clean:
+	rm -f $(OBJS) $(TARGET)
+
+# Regla para ejecutar el programa, tomando el archivo CRIM_FILE y BPM
+run: $(TARGET)
+	./$(TARGET) ./decoder/$(CRIM_FILE).crim2s $(BPM)
+
+
+midiTransversal.cpp (dentro de recursos):
+#include <SFML/Graphics.hpp>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <cmath>
+#include <mutex>
+#include <rtmidi/RtMidi.h>
+#include "colorFunctions.h"  // Incluir el archivo de funciones de coloreado
+
+struct NoteEvent {
+    int note;
+    int startTime;
+    int endTime;
+    bool noteOnSent = false;
+    bool noteOffSent = false;
+};
+
+struct Track {
+    std::vector<NoteEvent> notes;
+};
+
+std::mutex noteMutex;
+
+std::vector<Track> readCrim2sFile(const std::string& filename, int& ticksPerBeat) {
+    std::ifstream file(filename);
+    std::vector<Track> tracks;
+    if (!file.is_open()) {
+        std::cerr << "Error al abrir el archivo " << filename << std::endl;
+        return tracks;
+    }
+    std::string line;
+    int totalTracks = 0;
+    // Leer información del encabezado
+    while (std::getline(file, line)) {
+        if (line.find("Ticks per beat:") != std::string::npos) {
+            sscanf(line.c_str(), "Ticks per beat: %d", &ticksPerBeat);
+        } else if (line.find("Número de pistas:") != std::string::npos) {
+            sscanf(line.c_str(), "Número de pistas: %d", &totalTracks);
+            tracks.resize(totalTracks);
+        } else if (line.find("Eventos:") != std::string::npos) {
+            break;
+        }
+    }
+
+    // Leer los eventos
+    while (std::getline(file, line)) {
+        int time = 0, trackIndex = 0;
+        char msgType[16];
+        int channel = 0, note = 0, velocity = 0;
+        if (sscanf(line.c_str(), "Time=%d Track=%d %s", &time, &trackIndex, msgType) >= 3) {
+            if (std::string(msgType) == "note_on" || std::string(msgType) == "note_off") {
+                if (sscanf(line.c_str(), "Time=%d Track=%d %s channel=%d note=%d velocity=%d", 
+                           &time, &trackIndex, msgType, &channel, &note, &velocity) == 6) {
+                    if (trackIndex >= totalTracks) {
+                        std::cerr << "Índice de pista inválido " << trackIndex << std::endl;
+                        continue;
+                    }
+                    if (std::string(msgType) == "note_on" && velocity > 0) {
+                        NoteEvent newNote;
+                        newNote.note = note;
+                        newNote.startTime = time;
+                        newNote.endTime = -1;
+                        tracks[trackIndex].notes.push_back(newNote);
+                    } else {
+                        // Encontrar la nota y establecer endTime
+                        for (auto& n : tracks[trackIndex].notes) {
+                            if (n.note == note && n.endTime == -1) {
+                                n.endTime = time;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Establecer endTime para notas que no lo tienen
+    int maxTime = 0;
+    for (const auto& track : tracks) {
+        for (const auto& note : track.notes) {
+            if (note.endTime > maxTime) {
+                maxTime = note.endTime;
+            }
+        }
+    }
+    for (auto& track : tracks) {
+        for (auto& note : track.notes) {
+            if (note.endTime == -1) {
+                note.endTime = maxTime;
+            }
+        }
+    }
+
+    file.close();
+    return tracks;
+}
+
+sf::Color sumColors(const std::vector<sf::Color>& colors) {
+    int r = 0, g = 0, b = 0;
+    for (const auto& color : colors) {
+        r += color.r;
+        g += color.g;
+        b += color.b;
+    }
+    // Normalizar los valores de color para evitar overflow
+    int count = colors.size();
+    r = std::min(r / count, 255);
+    g = std::min(g / count, 255);
+    b = std::min(b / count, 255);
+
+    return sf::Color(r, g, b);
+}
+
+void processTrack(Track& track, int trackIndex, float currentTimeSeconds, float activationLineX, RtMidiOut &midiout, float pixelsPerSecond, float ticksPerSecond, std::vector<sf::Color>& trackColors) {
+    for (auto& note : track.notes) {
+        float noteStartTimeSeconds = note.startTime / ticksPerSecond;
+        float noteEndTimeSeconds = note.endTime / ticksPerSecond;
+
+        // Calcula la posición horizontal de la nota en la pantalla
+        float xPosition = 800 - pixelsPerSecond * (currentTimeSeconds - noteStartTimeSeconds);
+        float durationSeconds = noteEndTimeSeconds - noteStartTimeSeconds;
+        float noteWidth = durationSeconds * pixelsPerSecond;
+
+        // Enviar note_on cuando la nota cruce la línea de activación
+        if (!note.noteOnSent && xPosition <= activationLineX) {
+            std::vector<unsigned char> message = {0x90, static_cast<unsigned char>(note.note), 64};
+            midiout.sendMessage(&message);
+            note.noteOnSent = true;
+
+            // Agregar el color de la nota a la lista de colores de la pista
+            sf::Color noteColor = setColorByOctaveLinealAbss2(note.note);
+            trackColors.push_back(noteColor);
+        }
+
+        // Enviar note_off cuando termine la duración de la nota
+        if (!note.noteOffSent && xPosition + noteWidth <= activationLineX) {
+            std::vector<unsigned char> message = {0x80, static_cast<unsigned char>(note.note), 64};
+            midiout.sendMessage(&message);
+            note.noteOffSent = true;
+
+            // Agregar el color de la nota a la lista de colores de la pista
+            sf::Color noteColor = setColorByOctaveLinealAbss2(note.note);
+            trackColors.push_back(noteColor);
+        }
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Verifica que el usuario proporcione el archivo de entrada y los BPM como argumentos
+    if (argc != 3) {
+        std::cerr << "Uso: " << argv[0] << " <ruta al archivo .crim2s> <bpm>" << std::endl;
+        return -1;
+    }
+    std::string crim2sFilePath = argv[1];
+    float bpm = std::stof(argv[2]);
+
+    // Inicializa salida MIDI
+    RtMidiOut midiout;
+    unsigned int nPorts = midiout.getPortCount();
+    if (nPorts == 0) {
+        std::cout << "No hay puertos MIDI disponibles.\n";
+        return -1;
+    }
+    midiout.openPort(0);
+
+    int ticksPerBeat = 480; // Valor predeterminado
+    std::vector<Track> tracks = readCrim2sFile(crim2sFilePath, ticksPerBeat);
+    if (tracks.empty()) return -1;
+
+    // Inicializa ventana y variables de tiempo
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Piano MIDI Visualizer");
+    window.setFramerateLimit(60);
+    float currentTimeSeconds = 0.0f;
+    float pixelsPerSecond = 200.0f;
+    float ticksPerSecond = ticksPerBeat * bpm / 60.0f;
+    float activationLineX = 600.0f;
+
+    // Loop principal
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear(sf::Color::Black);
+
+        for (size_t trackIndex = 0; trackIndex < tracks.size(); ++trackIndex) {
+            std::vector<sf::Color> trackColors;  // Lista para almacenar los colores de las notas
+
+            processTrack(tracks[trackIndex], trackIndex, currentTimeSeconds, activationLineX, midiout, pixelsPerSecond, ticksPerSecond, trackColors);
+            
+            // Sumar todos los colores de las notas
+            sf::Color trackColor = sumColors(trackColors);
+
+            // Dibuja un rectángulo de ejemplo para representar la pista
+            sf::RectangleShape trackShape(sf::Vector2f(10.f, 50.f));
+            trackShape.setPosition(20.f + trackIndex * 50.f, 300.f);
+            trackShape.setFillColor(trackColor);
+            window.draw(trackShape);
+        }
+
+        currentTimeSeconds += 1.0f / 60.0f;
+        window.display();
+    }
+
+    return 0;
+}
+
+
+
+colorFunctions.cpp (dentro de recursos):
+#include "colorFunctions.h"
+
+// Asigna un color a la nota basado en la octava y la escala de colores
+sf::Color setColorByOctaveLinealAbss2(int note) {
+    float colors[12][3] = {
+        {255, 0, 0},     // C
+        {255, 127, 0},   // C#
+        {255, 255, 0},   // D
+        {127, 255, 0},   // D#
+        {0, 255, 0},     // E
+        {0, 255, 127},   // F
+        {0, 255, 255},   // F#
+        {0, 127, 255},   // G
+        {0, 0, 255},     // G#
+        {127, 0, 255},   // A
+        {255, 0, 255},   // A#
+        {255, 0, 127}    // B
+    };
+    return sf::Color(colors[note % 12][0], colors[note % 12][1], colors[note % 12][2]);
+}
+
+// Suma un número arbitrario de colores y devuelve el resultado
+sf::Color sumColors(const std::vector<sf::Color>& colors) {
+    int r = 0, g = 0, b = 0;
+    // Sumar los componentes de todos los colores
+    for (const auto& color : colors) {
+        r += color.r;
+        g += color.g;
+        b += color.b;
+    }
+    
+    // Asegurarse de que los valores no excedan 255
+    r = std::min(255, r);
+    g = std::min(255, g);
+    b = std::min(255, b);
+    
+    return sf::Color(r, g, b);
+}
+
+
+colorfunctions.h(dentro de recursos):
+#ifndef COLORFUNCTIONS_H
+#define COLORFUNCTIONS_H
+
+#include <SFML/Graphics.hpp>  // Si estás utilizando SFML para manejar colores
+
+sf::Color setColorByOctaveLinealAbss2(int note);
+// Suma un número arbitrario de colores y devuelve el resultado
+sf::Color sumColors(const std::vector<sf::Color>& colors);
+#endif // COLORFUNCTIONS_H
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ESTO ES EL FORMA EN PISTA org
+
+#include <SFML/Graphics.hpp>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <cmath>
+#include <memory>
+#include <mutex>
+#include <rtmidi/RtMidi.h>
+#include <algorithm>
+
+// -------------------------- Constantes --------------------------
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 800;
+const int GRID_ROWS = 4;
+const int GRID_COLS = 4;
+const int TOTAL_TRACKS = GRID_ROWS * GRID_COLS; // 16
+const float SQUARE_WIDTH = WINDOW_WIDTH / static_cast<float>(GRID_COLS);
+const float SQUARE_HEIGHT = WINDOW_HEIGHT / static_cast<float>(GRID_ROWS);
+const float SHAPE_MAX_SCALE = 1.0f;
+const float SHAPE_GROW_DURATION = 1.0f; // Segundos para alcanzar el tamaño máximo
+const float SHAPE_LIFETIME = 2.0f;      // Segundos después de alcanzar el tamaño máximo
+const float SHAPE_INITIAL_SCALE = 0.1f; // Escala inicial
+
+// -------------------------- Estructuras --------------------------
+
+// Estructura para representar un evento de nota
+struct NoteEvent {
+    int note;
+    int startTime;
+    int endTime;
+    bool noteOnSent = false;
+    bool noteOffSent = false;
+};
+
+// Estructura para representar una pista
+struct Track {
+    std::vector<NoteEvent> notes;
+};
+
+// Enum para definir tipos de formas
+enum class ShapeType {
+    Circle,       // 1 lado (raramente utilizado)
+    Oval,         // 2 lados (raramente utilizado)
+    Triangle,      // 3 lados
+    Square,        // 4 lados
+    Pentagon,      // 5 lados
+    Hexagon,       // 6 lados
+    Heptagon,      // 7 lados
+    Octagon,       // 8 lados
+    Nonagon,       // 9 lados
+    Decagon,       // 10 lados
+    Hendecagon,    // 11 lados
+    Dodecagon,     // 12 lados
+    // Puedes agregar más tipos de formas según tus necesidades
+};
+
+
+// Estructura para representar una forma dinámica
+// Función para calcular el centroide de un polígono regular
+sf::Vector2f calculateCentroid(const sf::ConvexShape& polygon) {
+    sf::Vector2f centroid(0.f, 0.f);
+    int pointCount = polygon.getPointCount();
+    for (int i = 0; i < pointCount; ++i) {
+        centroid += polygon.getPoint(i);
+    }
+    centroid.x /= pointCount;
+    centroid.y /= pointCount;
+    return centroid;
+}
+// Estructura para representar una forma dinámica
+struct NoteShape {
+    std::unique_ptr<sf::Shape> shape;
+    float currentScale;
+    float growthRate;      // Tasa de crecimiento por segundo
+    float lifetime;        // Tiempo transcurrido desde que alcanzó el tamaño máximo
+    bool active;
+
+    // Constructor
+    NoteShape(ShapeType type, sf::Color color, sf::Vector2f position, float growthRate) 
+        : currentScale(SHAPE_INITIAL_SCALE), growthRate(growthRate), lifetime(0.0f), active(true) 
+    {
+        float radius = (std::min(SQUARE_WIDTH, SQUARE_HEIGHT) / 2.0f - 10.0f) / SHAPE_MAX_SCALE;
+
+        switch (type) {
+            case ShapeType::Circle: {
+                auto circle = std::make_unique<sf::CircleShape>(radius);
+                circle->setFillColor(color);
+                circle->setOrigin(radius, radius); // Centro del círculo
+                circle->setPosition(position);
+                shape = std::move(circle);
+                break;
+            }
+            case ShapeType::Oval: {
+                auto oval = std::make_unique<sf::CircleShape>(radius);
+                oval->setFillColor(color);
+                oval->setOrigin(radius, radius); // Centro del óvalo
+                oval->setPosition(position);
+                oval->setScale(1.0f, 0.6f); // Escalar en Y para crear un óvalo
+                shape = std::move(oval);
+                break;
+            }
+            case ShapeType::Triangle: {
+                auto triangle = std::make_unique<sf::ConvexShape>(3);
+                for (int i = 0; i < 3; ++i) {
+                    float angle = i * 2 * M_PI / 3 - M_PI / 2; // Inicia apuntando hacia arriba
+                    triangle->setPoint(i, sf::Vector2f(radius * std::cos(angle), radius * std::sin(angle)));
+                }
+                triangle->setFillColor(color);
+                sf::Vector2f centroid = calculateCentroid(*triangle);
+                triangle->setOrigin(centroid); // Usar el centroide como origen
+                triangle->setPosition(position);
+                shape = std::move(triangle);
+                break;
+            }
+            case ShapeType::Square:
+            case ShapeType::Pentagon:
+            case ShapeType::Hexagon:
+            case ShapeType::Heptagon:
+            case ShapeType::Octagon:
+            case ShapeType::Nonagon:
+            case ShapeType::Decagon:
+            case ShapeType::Hendecagon:
+            case ShapeType::Dodecagon: {
+                int sides = 0;
+                switch (type) {
+                    case ShapeType::Square: sides = 4; break;
+                    case ShapeType::Pentagon: sides = 5; break;
+                    case ShapeType::Hexagon: sides = 6; break;
+                    case ShapeType::Heptagon: sides = 7; break;
+                    case ShapeType::Octagon: sides = 8; break;
+                    case ShapeType::Nonagon: sides = 9; break;
+                    case ShapeType::Decagon: sides = 10; break;
+                    case ShapeType::Hendecagon: sides = 11; break;
+                    case ShapeType::Dodecagon: sides = 12; break;
+                    default: sides = 3; break;
+                }
+
+                auto polygon = std::make_unique<sf::ConvexShape>(sides);
+                for (int i = 0; i < sides; ++i) {
+                    float angle = i * 2 * M_PI / sides - M_PI / 2; // Inicia apuntando hacia arriba
+                    polygon->setPoint(i, sf::Vector2f(radius * std::cos(angle), radius * std::sin(angle)));
+                }
+                polygon->setFillColor(color);
+                sf::Vector2f centroid = calculateCentroid(*polygon);
+                polygon->setOrigin(centroid); // Usar el centroide como origen
+                polygon->setPosition(position);
+                shape = std::move(polygon);
+                break;
+            }
+            default: {
+                auto circle = std::make_unique<sf::CircleShape>(radius);
+                circle->setFillColor(color);
+                circle->setOrigin(radius, radius); // Centro del círculo
+                circle->setPosition(position);
+                shape = std::move(circle);
+                break;
+            }
+        }
+
+        // Establecer la escala inicial
+        shape->setScale(currentScale, currentScale);
+    }
+
+    // Actualizar el estado de la forma
+    void update(float deltaTime) {
+        if (currentScale < SHAPE_MAX_SCALE) {
+            currentScale += growthRate * deltaTime;
+            if (currentScale >= SHAPE_MAX_SCALE) {
+                currentScale = SHAPE_MAX_SCALE;
+            }
+            shape->setScale(currentScale, currentScale);
+        }
+        else {
+            lifetime += deltaTime;
+            if (lifetime >= SHAPE_LIFETIME) {
+                active = false;
+            }
+        }
+    }
+
+    // Verificar si la forma ha terminado su ciclo
+    bool isFinished() const {
+        return !active;
+    }
+};
+
+// -------------------------- Funciones Auxiliares --------------------------
+
+// Asigna un color basado en la nota
+sf::Color setColorByOctaveLinealAbss2(int note) {
+    float colors[12][3] = {
+        {255, 0, 0},     // C
+        {255, 127, 0},   // C#
+        {255, 255, 0},   // D
+        {127, 255, 0},   // D#
+        {0, 255, 0},     // E
+        {0, 255, 127},   // F
+        {0, 255, 255},   // F#
+        {0, 127, 255},   // G
+        {0, 0, 255},     // G#
+        {127, 0, 255},   // A
+        {255, 0, 255},   // A#
+        {255, 0, 127}    // B
+    };
+    return sf::Color(colors[note % 12][0], colors[note % 12][1], colors[note % 12][2]);
+}
+
+// Lee el archivo .crim2s y devuelve las pistas
+std::vector<Track> readCrim2sFile(const std::string& filename, int& ticksPerBeat) {
+    std::ifstream file(filename);
+    std::vector<Track> tracks;
+    if (!file.is_open()) {
+        std::cerr << "Error al abrir el archivo " << filename << std::endl;
+        return tracks;
+    }
+    std::string line;
+    int totalTracks = 0;
+    // Leer información del encabezado
+    while (std::getline(file, line)) {
+        if (line.find("Ticks per beat:") != std::string::npos) {
+            sscanf(line.c_str(), "Ticks per beat: %d", &ticksPerBeat);
+        }
+        else if (line.find("Número de pistas:") != std::string::npos) {
+            sscanf(line.c_str(), "Número de pistas: %d", &totalTracks);
+            tracks.resize(totalTracks);
+        }
+        else if (line.find("Eventos:") != std::string::npos) {
+            break;
+        }
+    }
+
+    // Leer los eventos
+    while (std::getline(file, line)) {
+        int time = 0, trackIndex = 0;
+        char msgType[16];
+        int channel = 0, note = 0, velocity = 0;
+        if (sscanf(line.c_str(), "Time=%d Track=%d %s", &time, &trackIndex, msgType) >= 3) {
+            if (std::string(msgType) == "note_on" || std::string(msgType) == "note_off") {
+                if (sscanf(line.c_str(), "Time=%d Track=%d %s channel=%d note=%d velocity=%d",
+                           &time, &trackIndex, msgType, &channel, &note, &velocity) == 6) {
+                    if (trackIndex >= totalTracks) {
+                        std::cerr << "Índice de pista inválido " << trackIndex << std::endl;
+                        continue;
+                    }
+                    if (std::string(msgType) == "note_on" && velocity > 0) {
+                        NoteEvent newNote;
+                        newNote.note = note;
+                        newNote.startTime = time;
+                        newNote.endTime = -1;
+                        tracks[trackIndex].notes.push_back(newNote);
+                    }
+                    else {
+                        // Encontrar la nota y establecer endTime
+                        for (auto& n : tracks[trackIndex].notes) {
+                            if (n.note == note && n.endTime == -1) {
+                                n.endTime = time;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Establecer endTime para notas que no lo tienen
+    int maxTime = 0;
+    for (const auto& track : tracks) {
+        for (const auto& note : track.notes) {
+            if (note.endTime > maxTime) {
+                maxTime = note.endTime;
+            }
+        }
+    }
+    for (auto& track : tracks) {
+        for (auto& note : track.notes) {
+            if (note.endTime == -1) {
+                note.endTime = maxTime;
+            }
+        }
+    }
+
+    file.close();
+    return tracks;
+}
+
+// Determina el tipo de forma basado en la octava del nota
+ShapeType determineShapeType(int note) {
+    int octave = (note / 12) - 1; // C0 es 12, C1 es 24, etc.
+    switch (octave) {
+        case 1:
+            return ShapeType::Circle;
+        case 2:
+            return ShapeType::Oval;
+        case 3:
+            return ShapeType::Triangle;
+        case 4:
+            return ShapeType::Square;
+        case 5:
+            return ShapeType::Pentagon;
+        case 6:
+            return ShapeType::Hexagon;
+        case 7:
+            return ShapeType::Heptagon;
+        case 8:
+            return ShapeType::Octagon;
+        case 9:
+            return ShapeType::Nonagon;
+        case 10:
+            return ShapeType::Decagon;
+        case 11:
+            return ShapeType::Hendecagon;
+        case 12:
+            return ShapeType::Dodecagon;
+        // Puedes agregar más casos para octavas superiores
+        default:
+            return ShapeType::Circle; // Forma por defecto
+    }
+}
+
+// Procesa una pista para crear formas basadas en las notas
+void processTrack(Track& track, int trackIndex, float currentTimeSeconds, RtMidiOut& midiout, float pixelsPerSecond, float ticksPerSecond, std::vector<NoteShape>& shapes, float bpm) {
+    for (auto& note : track.notes) {
+        float noteStartTimeSeconds = note.startTime / ticksPerSecond;
+        float noteEndTimeSeconds = note.endTime / ticksPerSecond;
+
+        // Activar nota
+        if (!note.noteOnSent && currentTimeSeconds >= noteStartTimeSeconds) {
+            // Enviar mensaje MIDI note_on
+            std::vector<unsigned char> message = { 0x90, static_cast<unsigned char>(note.note), 64 };
+            midiout.sendMessage(&message);
+            note.noteOnSent = true;
+
+            // Determinar el tipo de forma basado en la octava del nota
+            ShapeType type = determineShapeType(note.note);
+
+            // Calcular la posición central del cuadrado correspondiente
+            int row = trackIndex / GRID_COLS;
+            int col = trackIndex % GRID_COLS;
+            float squareX = col * SQUARE_WIDTH;
+            float squareY = row * SQUARE_HEIGHT;
+
+            // Posición inicial: centro del cuadrado
+            sf::Vector2f startPosition(squareX + SQUARE_WIDTH / 2.0f, squareY + SQUARE_HEIGHT / 2.0f);
+
+            // Obtener el color de la nota
+            sf::Color noteColor = setColorByOctaveLinealAbss2(note.note);
+
+            // Tasa de crecimiento para alcanzar el tamaño máximo en SHAPE_GROW_DURATION segundos
+            float growthRate = (SHAPE_MAX_SCALE - SHAPE_INITIAL_SCALE) / SHAPE_GROW_DURATION;
+
+            // Crear y agregar la forma
+            shapes.emplace_back(type, noteColor, startPosition, growthRate);
+        }
+
+        // Desactivar nota
+        if (!note.noteOffSent && currentTimeSeconds >= noteEndTimeSeconds) {
+            // Enviar mensaje MIDI note_off
+            std::vector<unsigned char> message = { 0x80, static_cast<unsigned char>(note.note), 64 };
+            midiout.sendMessage(&message);
+            note.noteOffSent = true;
+        }
+    }
+}
+
+// -------------------------- Función Principal --------------------------
+
+int main(int argc, char* argv[]) {
+    // Verificar argumentos de línea de comandos
+    if (argc != 3) {
+        std::cerr << "Uso: " << argv[0] << " <ruta al archivo .crim2s> <bpm>" << std::endl;
+        return -1;
+    }
+    std::string crim2sFilePath = argv[1];
+    float bpm = std::stof(argv[2]);
+
+    // Inicializar salida MIDI
+    RtMidiOut midiout;
+    unsigned int nPorts = midiout.getPortCount();
+    if (nPorts == 0) {
+        std::cout << "No hay puertos MIDI disponibles.\n";
+        return -1;
+    }
+    midiout.openPort(0);
+
+    // Leer el archivo .crim2s
+    int ticksPerBeat = 480; // Valor por defecto, se actualizará al leer el archivo
+    std::vector<Track> tracks = readCrim2sFile(crim2sFilePath, ticksPerBeat);
+    if (tracks.empty()) {
+        std::cerr << "Error: no se encontraron pistas en el archivo." << std::endl;
+        return -1;
+    }
+
+    // Asegurar que hay exactamente 16 pistas
+    if (tracks.size() < TOTAL_TRACKS) {
+        tracks.resize(TOTAL_TRACKS); // Rellenar con pistas vacías si es necesario
+    }
+    else if (tracks.size() > TOTAL_TRACKS) {
+        tracks.resize(TOTAL_TRACKS); // Truncar pistas adicionales
+    }
+
+    // Calcular ticks por segundo
+    float beatsPerSecond = bpm / 60.0f;
+    float ticksPerSecond = ticksPerBeat * beatsPerSecond;
+
+    // Configurar ventana de visualización
+    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Vista Transversal MIDI");
+    window.setFramerateLimit(60); // Limitar a 60 FPS
+
+    // Inicializar formas por pista
+    std::vector<std::vector<NoteShape>> trackShapes(TOTAL_TRACKS);
+
+    // Reloj para el tiempo total y deltaTime
+    sf::Clock totalClock;  // Tiempo total transcurrido
+    sf::Clock deltaClock;  // DeltaTime entre frames
+
+    // Bucle principal
+    while (window.isOpen()) {
+        // Calcular deltaTime
+        float deltaTime = deltaClock.restart().asSeconds();
+
+        // Manejar eventos
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        // Calcular tiempo actual en segundos
+        float currentTimeSeconds = totalClock.getElapsedTime().asSeconds();
+
+        // Actualizar cada pista
+        for (int i = 0; i < TOTAL_TRACKS; ++i) {
+            processTrack(tracks[i], i, currentTimeSeconds, midiout, 0.0f, ticksPerSecond, trackShapes[i], bpm);
+        }
+
+        // Actualizar formas
+        for (int i = 0; i < TOTAL_TRACKS; ++i) {
+            auto& shapes = trackShapes[i];
+            for (auto& shape : shapes) {
+                shape.update(deltaTime);
+            }
+            // Eliminar formas que han terminado su ciclo
+            shapes.erase(std::remove_if(shapes.begin(), shapes.end(),
+                [](const NoteShape& s) { return s.isFinished(); }), shapes.end());
+        }
+
+        // Limpiar ventana con fondo gris claro
+        window.clear(sf::Color(200, 200, 200));
+
+        // Dibujar cuadrícula de 4x4 con cuadrados negros
+        for (int row = 0; row < GRID_ROWS; ++row) {
+            for (int col = 0; col < GRID_COLS; ++col) {
+                int trackIndex = row * GRID_COLS + col;
+                sf::RectangleShape square(sf::Vector2f(SQUARE_WIDTH - 2, SQUARE_HEIGHT - 2));
+                square.setFillColor(sf::Color::Black); // Pistas negras
+                square.setOutlineColor(sf::Color::Black);
+                square.setOutlineThickness(1);
+                square.setPosition(col * SQUARE_WIDTH + 1, row * SQUARE_HEIGHT + 1);
+                window.draw(square);
+            }
+        }
+
+        // Dibujar formas
+        for (int i = 0; i < TOTAL_TRACKS; ++i) {
+            for (auto& shape : trackShapes[i]) {
+                window.draw(*shape.shape);
+            }
+        }
+
+        // Mostrar todo en la ventana
+        window.display();
+    }
+
+    return 0;
+}
