@@ -1,6 +1,6 @@
 #!/bin/bash
 
-EXCLUDE_DIR="$HOME/Escritorio/tfg/midifiles"
+EXCLUDE_DIR="$HOME/Escritorio/tfg/tfg/midifiles"
 BPM=120
 MIX_STRATEGY="average"  # Valor por defecto
 USE_EXISTING_MIDI=false
@@ -48,9 +48,9 @@ echo "[*] CONEXION CORRECTA CON FLUYDSYNTH"
 if [ "$USE_EXISTING_MIDI" = false ]; then
     # KREADOR MIDI
     echo "[*] KREADOR MIDI"
-    python3 "$HOME/Escritorio/tfg/midiKreatore/creador_midiMultitrak.py" "$MIDI_FILE"
+    python3 "$HOME/Escritorio/tfg/tfg/midiKreatore/creador_midiMultitrak.py" "$MIDI_FILE"
 
-    if [ -f "$HOME/Escritorio/tfg/$MIDI_FILE" ]; then
+    if [ -f "$HOME/Escritorio/tfg/tfg/$MIDI_FILE" ]; then
         echo "Archivo MIDI '$MIDI_FILE' creado con éxito."
     else
         echo "Error: no se pudo crear el archivo MIDI."
@@ -58,7 +58,7 @@ if [ "$USE_EXISTING_MIDI" = false ]; then
     fi
 fi
 
-cd "$HOME/Escritorio/tfg" || exit
+cd "$HOME/Escritorio/tfg/tfg" || exit
 
 # EKSTRACCION MIDI
 echo "[*] EKSTRACCION MIDI"

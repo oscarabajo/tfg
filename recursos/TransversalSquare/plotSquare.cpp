@@ -10,7 +10,7 @@
 #include <mutex>
 #include <rtmidi/RtMidi.h>
 #include <algorithm>
-#include "../colorFunctions/colorFunctions.h"  // Asegúrate de que la ruta es correcta según tu estructura de carpetas
+#include "../colorFunctions/colorFunctions.h" // Asegúrate de que la ruta es correcta según tu estructura de carpetas
 
 // -------------------------- Constantes --------------------------
 const int WINDOW_WIDTH = 800;
@@ -41,7 +41,7 @@ struct Track {
     std::vector<NoteEvent> notes;
 };
 
-// Enum para definir tipos de formas
+// Enum para definir tipos de formas (no se usa en este enfoque, pero se mantiene por consistencia)
 enum class ShapeType {
     Circle,       
     Oval,         
@@ -57,7 +57,7 @@ enum class ShapeType {
     Dodecagon,     
 };
 
-// Función para calcular el centroide de un polígono regular
+// Función para calcular el centroide de un polígono regular (no se usa en este enfoque)
 sf::Vector2f calculateCentroid(const sf::ConvexShape& polygon) {
     sf::Vector2f centroid(0.f, 0.f);
     int pointCount = polygon.getPointCount();
@@ -69,106 +69,12 @@ sf::Vector2f calculateCentroid(const sf::ConvexShape& polygon) {
     return centroid;
 }
 
-// Estructura para representar una forma dinámica
+// Estructura para representar una forma dinámica (modificada para solo mantener el color)
 struct NoteShape {
-    std::unique_ptr<sf::Shape> shape;
-    float currentScale;
-    float growthRate;      // Tasa de crecimiento por segundo
-    float lifetime;        // Tiempo transcurrido desde que alcanzó el tamaño máximo
-    bool active;
+    sf::Color color; // Solo necesitamos el color para la mezcla
 
     // Constructor
-    NoteShape(ShapeType type, sf::Color color, sf::Vector2f position, float growthRate) 
-        : currentScale(SHAPE_INITIAL_SCALE), growthRate(growthRate), lifetime(0.0f), active(true) 
-    {
-        float radius = (std::min(SQUARE_WIDTH, SQUARE_HEIGHT) / 2.0f - 10.0f) / SHAPE_MAX_SCALE;
-
-        switch (type) {
-            case ShapeType::Circle: {
-                auto circle = std::make_unique<sf::CircleShape>(radius);
-                circle->setFillColor(color);
-                circle->setOrigin(radius, radius);
-                circle->setPosition(position);
-                shape = std::move(circle);
-                break;
-            }
-            case ShapeType::Oval: {
-                auto oval = std::make_unique<sf::CircleShape>(radius);
-                oval->setFillColor(color);
-                oval->setOrigin(radius, radius);
-                oval->setPosition(position);
-                oval->setScale(1.0f, 0.6f); 
-                shape = std::move(oval);
-                break;
-            }
-            case ShapeType::Triangle: {
-                auto triangle = std::make_unique<sf::ConvexShape>(3);
-                for (int i = 0; i < 3; ++i) {
-                    float angle = i * 2 * M_PI / 3 - M_PI / 2;
-                    triangle->setPoint(i, sf::Vector2f(radius * std::cos(angle), radius * std::sin(angle)));
-                }
-                triangle->setFillColor(color);
-                {
-                    sf::Vector2f centroid = calculateCentroid(*triangle);
-                    triangle->setOrigin(centroid);
-                }
-                triangle->setPosition(position);
-                shape = std::move(triangle);
-                break;
-            }
-            default: {
-                int sides = 0;
-                switch (type) {
-                    case ShapeType::Square: sides = 4; break;
-                    case ShapeType::Pentagon: sides = 5; break;
-                    case ShapeType::Hexagon: sides = 6; break;
-                    case ShapeType::Heptagon: sides = 7; break;
-                    case ShapeType::Octagon: sides = 8; break;
-                    case ShapeType::Nonagon: sides = 9; break;
-                    case ShapeType::Decagon: sides = 10; break;
-                    case ShapeType::Hendecagon: sides = 11; break;
-                    case ShapeType::Dodecagon: sides = 12; break;
-                    default: sides = 3; break;
-                }
-
-                auto polygon = std::make_unique<sf::ConvexShape>(sides);
-                for (int i = 0; i < sides; ++i) {
-                    float angle = i * 2 * M_PI / sides - M_PI / 2;
-                    polygon->setPoint(i, sf::Vector2f(radius * std::cos(angle), radius * std::sin(angle)));
-                }
-                polygon->setFillColor(color);
-                {
-                    sf::Vector2f centroid = calculateCentroid(*polygon);
-                    polygon->setOrigin(centroid);
-                }
-                polygon->setPosition(position);
-                shape = std::move(polygon);
-                break;
-            }
-        }
-
-        // Establecer la escala inicial
-        shape->setScale(currentScale, currentScale);
-    }
-
-    void update(float deltaTime) {
-        if (currentScale < SHAPE_MAX_SCALE) {
-            currentScale += growthRate * deltaTime;
-            if (currentScale >= SHAPE_MAX_SCALE) {
-                currentScale = SHAPE_MAX_SCALE;
-            }
-            shape->setScale(currentScale, currentScale);
-        } else {
-            lifetime += deltaTime;
-            if (lifetime >= SHAPE_LIFETIME) {
-                active = false;
-            }
-        }
-    }
-
-    bool isFinished() const {
-        return !active;
-    }
+    NoteShape(sf::Color color) : color(color) {}
 };
 
 // Lee el archivo .crim2s y devuelve las pistas
@@ -244,7 +150,7 @@ std::vector<Track> readCrim2sFile(const std::string& filename, int& ticksPerBeat
     return tracks;
 }
 
-// Determina el tipo de forma basado en la octava de la nota
+// Determina el tipo de forma basado en la octava de la nota (no se usa en este enfoque)
 ShapeType determineShapeType(int note) {
     int octave = (note / 12) - 1;
     switch (octave) {
@@ -277,23 +183,15 @@ void processTrack(Track& track, int trackIndex, float currentTimeSeconds, RtMidi
             midiout.sendMessage(&message);
             note.noteOnSent = true;
 
-            ShapeType type = determineShapeType(note.note);
-
-            int row = trackIndex / GRID_COLS;
-            int col = trackIndex % GRID_COLS;
-            float squareX = col * SQUARE_WIDTH;
-            float squareY = row * SQUARE_HEIGHT;
-
-            sf::Vector2f startPosition(squareX + SQUARE_WIDTH / 2.0f, squareY + SQUARE_HEIGHT / 2.0f);
-
+            // Obtener el color de la nota
             sf::Color noteColor = setColorByOctave(note.note);
             std::cout << "Nota Activada: " << note.note << ", Color Asignado: (" 
                       << static_cast<int>(noteColor.r) << ", " 
                       << static_cast<int>(noteColor.g) << ", " 
                       << static_cast<int>(noteColor.b) << ")" << std::endl;
 
-            float growthRate = (SHAPE_MAX_SCALE - SHAPE_INITIAL_SCALE) / SHAPE_GROW_DURATION;
-            activeShapes.emplace_back(type, noteColor, startPosition, growthRate);
+            // Agregar el color a las formas activas de esta pista
+            activeShapes.emplace_back(noteColor);
         }
 
         // Desactivar nota
@@ -303,18 +201,16 @@ void processTrack(Track& track, int trackIndex, float currentTimeSeconds, RtMidi
             note.noteOffSent = true;
             std::cout << "Nota Desactivada: " << note.note << std::endl;
 
-            // Eliminar el NoteShape correspondiente
-            // Asumimos que cada nota activa corresponde a un NoteShape
-            // Buscamos la primera forma que tenga el mismo color que la nota
-            sf::Color targetColor = setColorByOctave(note.note);
+            // Eliminar el color correspondiente de las formas activas
             auto it = std::find_if(activeShapes.begin(), activeShapes.end(), [&](const NoteShape& shape) {
-                return shape.shape->getFillColor().r == targetColor.r &&
-                       shape.shape->getFillColor().g == targetColor.g &&
-                       shape.shape->getFillColor().b == targetColor.b;
+                // Comparar colores RGB (ignorar alpha)
+                return shape.color.r == setColorByOctave(note.note).r &&
+                       shape.color.g == setColorByOctave(note.note).g &&
+                       shape.color.b == setColorByOctave(note.note).b;
             });
 
             if (it != activeShapes.end()) {
-                it->active = false; // Marcar para eliminación
+                activeShapes.erase(it);
             }
         }
     }
@@ -364,19 +260,19 @@ int main(int argc, char* argv[]) {
     sf::Clock deltaClock;  
 
     // Definir color fijo para los cuadrados de la cuadrícula (gris oscuro)
-    sf::Color squareBackgroundColor(0,0,0); // Gris oscuro
+    sf::Color squareBackgroundColor(50, 50, 50); // Gris oscuro
 
-    // Crear las formas de la cuadrícula (para dibujar el fondo de cada pista)
-    std::vector<sf::RectangleShape> gridBackgrounds(TOTAL_TRACKS);
+    // Crear las formas de la cuadrícula
+    std::vector<sf::RectangleShape> gridSquares(TOTAL_TRACKS);
     for (int trackIndex = 0; trackIndex < TOTAL_TRACKS; ++trackIndex) {
         int row = trackIndex / GRID_COLS;
         int col = trackIndex % GRID_COLS;
-        sf::RectangleShape background(sf::Vector2f(SQUARE_WIDTH - 2, SQUARE_HEIGHT - 2));
-        background.setFillColor(squareBackgroundColor);
-        background.setOutlineColor(sf::Color::Black);
-        background.setOutlineThickness(1);
-        background.setPosition(col * SQUARE_WIDTH + 1, row * SQUARE_HEIGHT + 1);
-        gridBackgrounds[trackIndex] = background;
+        sf::RectangleShape square(sf::Vector2f(SQUARE_WIDTH - 2, SQUARE_HEIGHT - 2));
+        square.setFillColor(sf::Color::Black); // Inicialmente negro
+        square.setOutlineColor(sf::Color::Black);
+        square.setOutlineThickness(1);
+        square.setPosition(col * SQUARE_WIDTH + 1, row * SQUARE_HEIGHT + 1);
+        gridSquares[trackIndex] = square;
     }
 
     while (window.isOpen()) {
@@ -395,30 +291,14 @@ int main(int argc, char* argv[]) {
             processTrack(tracks[i], i, currentTimeSeconds, midiout, ticksPerSecond, trackActiveShapes[i]);
         }
 
-        // Actualizar las formas activas y eliminar las inactivas
-        for (int i = 0; i < TOTAL_TRACKS; ++i) {
-            auto& shapes = trackActiveShapes[i];
-            for (auto& shape : shapes) {
-                shape.update(deltaTime);
-            }
-            shapes.erase(std::remove_if(shapes.begin(), shapes.end(),
-                                        [](const NoteShape& s) { return s.isFinished(); }),
-                         shapes.end());
-        }
-
         window.clear(sf::Color::Black); // Fondo de la ventana negro
 
-        // Dibujar la cuadrícula de fondo
-        for (const auto& background : gridBackgrounds) {
-            window.draw(background);
-        }
-
-        // Dibujar las formas animadas con colores mezclados
+        // Mezclar colores y actualizar los cuadrados de la cuadrícula
         for (int i = 0; i < TOTAL_TRACKS; ++i) {
             auto& activeShapes = trackActiveShapes[i];
             std::vector<sf::Color> colors;
             for (const auto& shape : activeShapes) {
-                colors.push_back(shape.shape->getFillColor());
+                colors.push_back(shape.color);
             }
 
             // Aplicar la estrategia de mezcla (sum o average)
@@ -426,14 +306,16 @@ int main(int argc, char* argv[]) {
             if (!colors.empty()) {
                 // Puedes cambiar la estrategia aquí: mixColorsSum o mixColorsAverage
                 //mixedColor = applyMixingStrategy(colors, mixColorsSum); // Usando suma
-                 mixedColor = applyMixingStrategy(colors, mixColorsAverage); // Usando promedio
+                mixedColor = applyMixingStrategy(colors, mixColorsAverage); // Usando promedio
             }
 
-            // Dibujar cada forma con el color mezclado
-            for (auto& shape : activeShapes) {
-                shape.shape->setFillColor(mixedColor);
-                window.draw(*shape.shape);
-            }
+            // Actualizar el color del cuadrado correspondiente
+            gridSquares[i].setFillColor(mixedColor);
+        }
+
+        // Dibujar los cuadrados de la cuadrícula
+        for (const auto& square : gridSquares) {
+            window.draw(square);
         }
 
         window.display();

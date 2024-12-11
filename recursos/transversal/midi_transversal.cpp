@@ -198,7 +198,7 @@ int main(int argc, char* argv[]) {
                     trackStates[i].activeNotes += 1;
 
                     // Obtener el color de la nota
-                    sf::Color noteColor = setColorByOctaveLinealAbss2(note.note);
+                    sf::Color noteColor = setColorByOctaveBlue(note.note);
 
                     // Agregar el color al vector de colores activos
                     trackStates[i].activeNoteColors.push_back(noteColor);
@@ -222,7 +222,7 @@ int main(int argc, char* argv[]) {
                     }
 
                     // Obtener el color de la nota
-                    sf::Color noteColor = setColorByOctaveLinealAbss2(note.note);
+                    sf::Color noteColor = setColorByOctaveBlue(note.note);
 
                     // Remover el color del vector de colores activos
                     // Busca la primera ocurrencia del color y lo elimina

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-EXCLUDE_DIR="$HOME/Escritorio/tfg/midifiles"
+EXCLUDE_DIR="$HOME/Escritorio/tfg/tfg/midifiles"
 BPM=180
 BPM=120
 MIX_STRATEGY="average"  # Valor por defecto
@@ -51,10 +51,10 @@ echo "[*] CONEXION CORRECTA CON FLUYDSYNTH"
 if [ "$USE_EXISTING_MIDI" = false ]; then
     # KREADOR MIDI
     echo "[*] KREADOR MIDI"
-    python3 "$HOME/Escritorio/tfg/midiKreatore/creador_midi.py" "$MIDI_FILE"
-   # python3 "$HOME/Escritorio/tfg/midiKreatore/creador_midiMultitrak.py" "$MIDI_FILE"
+   # python3 "$HOME/Escritorio/tfg/tfg/midiKreatore/creador_midi.py" "$MIDI_FILE"
+    python3 "$HOME/Escritorio/tfg/tfg/midiKreatore/creador_midiMultitrak.py" "$MIDI_FILE"
 
-    if [ -f "$HOME/Escritorio/tfg/$MIDI_FILE" ]; then
+    if [ -f "$HOME/Escritorio/tfg/tfg/$MIDI_FILE" ]; then
         echo "Archivo MIDI '$MIDI_FILE' creado con éxito."
     else
         echo "Error: no se pudo crear el archivo MIDI."
@@ -62,7 +62,7 @@ if [ "$USE_EXISTING_MIDI" = false ]; then
     fi
 fi
 
-cd "$HOME/Escritorio/tfg" || exit
+cd "$HOME/Escritorio/tfg/tfg" || exit
 
 # EKSTRACCION MIDI
 echo "[*] EKSTRACCION MIDI"
@@ -92,10 +92,10 @@ fi
 
 # PLOTTEO
 echo "[*] PLOTTEO"
-if [ -f "./recursos/midiviewer" ]; then
-    ./recursos/midiviewer ./decoder/"$CRIM_FILE".crim2s $BPM # Pasar el archivo .crim2s como argumento
+if [ -f "./recursos/forma_en_pista/midiviewer" ]; then
+    ./recursos/forma_en_pista/midiviewer ./decoder/"$CRIM_FILE".crim2s $BPM # Pasar el archivo .crim2s como argumento
 else
-    echo "Error: archivo ./recursos/midiviewer no encontrado."
+    echo "Error: archivo ./recursos/forma_en_pista/midiviewer no encontrado."
     exit 1
 fi
 

@@ -108,18 +108,18 @@ Archivo MIDI 'pruebamultitrak.mid' creado con éxito.
 [*] EKSTRACCION MIDI
 Extracción completada.
 [*] KOMPILADO C++
-make: se entra en el directorio '/home/megg/Escritorio/tfg/recursos'
+make: se entra en el directorio '/home/megg/Escritorio/tfg/tfg/recursos'
 rm -f midi_transversal.o midiviewer
-make: se sale del directorio '/home/megg/Escritorio/tfg/recursos'
-make: se entra en el directorio '/home/megg/Escritorio/tfg/recursos'
+make: se sale del directorio '/home/megg/Escritorio/tfg/tfg/recursos'
+make: se entra en el directorio '/home/megg/Escritorio/tfg/tfg/recursos'
 g++ -std=c++17 -Wall -g -c midi_transversal.cpp -o midi_transversal.o
 g++ midi_transversal.o -o midiviewer -lsfml-graphics -lsfml-window -lsfml-system -lrtmidi -pthread
 /usr/bin/ld: midi_transversal.o: en la función `processTrack(Track&, int, float, float, RtMidiOut&, float, float, std::vector<sf::Color, std::allocator<sf::Color> >&)':
-/home/megg/Escritorio/tfg/recursos/midi_transversal.cpp:133: referencia a `setColorByOctaveLinealAbss2(int)' sin definir
-/usr/bin/ld: /home/megg/Escritorio/tfg/recursos/midi_transversal.cpp:144: referencia a `setColorByOctaveLinealAbss2(int)' sin definir
+/home/megg/Escritorio/tfg/tfg/recursos/midi_transversal.cpp:133: referencia a `setColorByOctaveLinealAbss2(int)' sin definir
+/usr/bin/ld: /home/megg/Escritorio/tfg/tfg/recursos/midi_transversal.cpp:144: referencia a `setColorByOctaveLinealAbss2(int)' sin definir
 collect2: error: ld returned 1 exit status
 make: *** [Makefile:21: midiviewer] Error 1
-make: se sale del directorio '/home/megg/Escritorio/tfg/recursos'
+make: se sale del directorio '/home/megg/Escritorio/tfg/tfg/recursos'
 [*] PLOTTEO
 Error: archivo ./recursos/midiviewer no encontrado.
 
@@ -128,7 +128,7 @@ Error: archivo ./recursos/midiviewer no encontrado.
 koloreoTransversal.sh:
 #!/bin/bash
 
-EXCLUDE_DIR="$HOME/Escritorio/tfg/midifiles"
+EXCLUDE_DIR="$HOME/Escritorio/tfg/tfg/midifiles"
 BPM=120
 
 # Verificar si se proporcionó un argumento
@@ -167,9 +167,9 @@ fi
 if [ "$USE_EXISTING_MIDI" = false ]; then
     # KREADOR MIDI
     echo "[*] KREADOR MIDI"
-    python3 "$HOME/Escritorio/tfg/midiKreatore/creador_midiMultitrak.py" "$MIDI_FILE"
+    python3 "$HOME/Escritorio/tfg/tfg/midiKreatore/creador_midiMultitrak.py" "$MIDI_FILE"
 
-    if [ -f "$HOME/Escritorio/tfg/$MIDI_FILE" ]; then
+    if [ -f "$HOME/Escritorio/tfg/tfg/$MIDI_FILE" ]; then
         echo "Archivo MIDI '$MIDI_FILE' creado con éxito."
     else
         echo "Error: no se pudo crear el archivo MIDI."
@@ -177,7 +177,7 @@ if [ "$USE_EXISTING_MIDI" = false ]; then
     fi
 fi
 
-cd "$HOME/Escritorio/tfg" || exit
+cd "$HOME/Escritorio/tfg/tfg" || exit
 
 # EKSTRACCION MIDI
 echo "[*] EKSTRACCION MIDI"

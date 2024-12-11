@@ -1,17 +1,18 @@
-#ifndef COLORFUNCTIONS_H
-#define COLORFUNCTIONS_H
+// colorFunctions.h
 
+#pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
 
-// Declaración de funciones
-sf::Color setColorByOctaveLinealAbss2(int note);
+// Asigna un color a la nota basado en la octava y la escala de colores
+sf::Color setColorByOctave(int note);
+sf::Color setColorByOctaveBlue(int note);
 
-// Funciones auxiliares para mezclar dos colores
+// Función auxiliar para mezclar dos colores sumando sus componentes RGB
 sf::Color mixColorsSum(const sf::Color& a, const sf::Color& b);
+
+// Función auxiliar para mezclar dos colores promediando sus componentes RGB
 sf::Color mixColorsAverage(const sf::Color& a, const sf::Color& b);
 
-// Función para aplicar una estrategia de mezcla a múltiples colores
+// Implementación de applyMixingStrategy
 sf::Color applyMixingStrategy(const std::vector<sf::Color>& colors, sf::Color (*mixFunc)(const sf::Color&, const sf::Color&));
-
-#endif // COLORFUNCTIONS_H
